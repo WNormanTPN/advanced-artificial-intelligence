@@ -1,7 +1,7 @@
 # Bài toán Lập lịch (Job Scheduling Problem)
 
 ## 1. Mô tả bài toán
-- Có `n` công việc.
+- Có `n` công việc.  
 - Mỗi công việc `i` có:
   - **Deadline** `d[i]`: thời hạn phải hoàn thành.
   - **Profit** `p[i]`: lợi nhuận nếu hoàn thành đúng hạn.
@@ -59,9 +59,53 @@ def job_scheduling_backtracking(jobs, t=0, current_profit=0, schedule=None, best
 
 def solve_job_scheduling_backtracking(jobs):
     return job_scheduling_backtracking(jobs)
-Phương pháp
-Brute Force Backtracking
-Độ phức tạp: O(2^n)
+#    Nhánh cận
+def job_scheduling_branch_and_bound(jobs):
+    n = len(jobs)
+    best_profit = 0
+    best_schedule = []
+
+    # Sắp xếp theo profit giảm dần để cận tốt hơn
+    jobs = sorted([(d, p, i) for i, (d, p) in enumerate(jobs)], key=lambda x: x[1], reverse=True)
+
+    def bound(i, current_profit, chosen):
+        """Cận trên (ước lượng tối đa có thể đạt được từ nhánh này)"""
+        total_profit = current_profit
+        remaining = n - i
+        # cộng thêm lợi nhuận lớn nhất của các job còn lại (tham lam)
+        for j in range(i, n):
+            total_profit += jobs[j][1]
+        return total_profit
+
+    def backtrack(i, current_profit, chosen):
+        nonlocal best_profit, best_schedule
+
+        if i == n:
+            if current_profit > best_profit:
+                best_profit = current_profit
+                best_schedule = chosen.copy()
+            return
+
+        # Cắt nhánh nếu cận trên ≤ best_profit hiện tại
+        if bound(i, current_profit, chosen) <= best_profit:
+            return
+
+        d, p, idx = jobs[i]
+
+        # 1. Thử chọn job i
+        if len(chosen) < d:
+            chosen.append(idx)
+            backtrack(i+1, current_profit + p, chosen)
+            chosen.pop()
+
+        # 2. Bỏ job i
+        backtrack(i+1, current_profit, chosen)
+
+    backtrack(0, 0, [])
+    return best_profit, best_schedule
+Phương pháp	
+Brute Force Backtracking	
+Độ phức tạp: O(2^n)	
 Đặc điểm: Duyệt hết, dễ cài đặt nhưng chậm khi n lớn
 Phương pháp
 Branch & Bound
