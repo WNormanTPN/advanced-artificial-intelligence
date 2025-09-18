@@ -4,9 +4,9 @@ from typing import List, Tuple
 
 class Node:
     def __init__(self, level: int, profit: int, bound: int, schedule: List[Tuple[int, int]]):
-        self.level = level        # cấp của node trong cây (đang xét job thứ mấy)
-        self.profit = profit      # lợi nhuận hiện tại
-        self.bound = bound        # cận trên (bound)
+        self.level = level  # cấp của node trong cây (đang xét job thứ mấy)
+        self.profit = profit  # lợi nhuận hiện tại
+        self.bound = bound  # cận trên (bound)
         self.schedule = schedule  # danh sách công việc đã chọn
 
     # Định nghĩa so sánh để dùng trong max-heap (ưu tiên bound lớn hơn)
