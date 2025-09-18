@@ -1,7 +1,7 @@
 # Bài toán Lập lịch (Job Scheduling Problem)
 
 ## 1. Mô tả bài toán
-- Có `n` công việc.
+- Có `n` công việc.  
 - Mỗi công việc `i` có:
   - **Deadline** `d[i]`: thời hạn phải hoàn thành.
   - **Profit** `p[i]`: lợi nhuận nếu hoàn thành đúng hạn.
@@ -103,9 +103,9 @@ def job_scheduling_branch_and_bound(jobs):
 
     backtrack(0, 0, [])
     return best_profit, best_schedule
-Phương pháp
-Brute Force Backtracking
-Độ phức tạp: O(2^n)
+Phương pháp	
+Brute Force Backtracking	
+Độ phức tạp: O(2^n)	
 Đặc điểm: Duyệt hết, dễ cài đặt nhưng chậm khi n lớn
 Phương pháp
 Branch & Bound
