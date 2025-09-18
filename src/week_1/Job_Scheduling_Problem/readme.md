@@ -1,7 +1,7 @@
 # Bài toán Lập lịch (Job Scheduling Problem)
 
 ## 1. Mô tả bài toán
-- Có `n` công việc.
+- Có `n` công việc.  
 - Mỗi công việc `i` có:
   - **Deadline** `d[i]`: thời hạn phải hoàn thành.
   - **Profit** `p[i]`: lợi nhuận nếu hoàn thành đúng hạn.
@@ -66,7 +66,7 @@ Cho một tập `n` công việc. Mỗi công việc gồm:
 - `deadline`: hạn chót để hoàn thành (tính theo slot thời gian).
 - `profit`: lợi nhuận nếu hoàn thành công việc trước hạn.
 
-**Mục tiêu**:
+**Mục tiêu**:  
 - Chọn ra tập công việc và thứ tự thực hiện sao cho **tổng lợi nhuận lớn nhất**.
 - Không có công việc nào trễ hạn.
 
@@ -177,9 +177,9 @@ if __name__ == "__main__":
 
     print("Lợi nhuận tối đa:", max_profit)
     print("Lịch công việc tối ưu:", schedule)
-Phương pháp
-Brute Force Backtracking
-Độ phức tạp: O(2^n)
+Phương pháp	
+Brute Force Backtracking	
+Độ phức tạp: O(2^n)	
 Đặc điểm: Duyệt hết, dễ cài đặt nhưng chậm khi n lớn
 Phương pháp
 Branch & Bound
