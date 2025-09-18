@@ -1,7 +1,7 @@
 # Bài toán Lập lịch (Job Scheduling Problem)
 
 ## 1. Mô tả bài toán
-- Có `n` công việc.
+- Có `n` công việc.  
 - Mỗi công việc `i` có:
   - **Deadline** `d[i]`: thời hạn phải hoàn thành.
   - **Profit** `p[i]`: lợi nhuận nếu hoàn thành đúng hạn.
@@ -59,53 +59,127 @@ def job_scheduling_backtracking(jobs, t=0, current_profit=0, schedule=None, best
 
 def solve_job_scheduling_backtracking(jobs):
     return job_scheduling_backtracking(jobs)
-#    Nhánh cận
+# Job Scheduling Problem - Branch and Bound
+
+## 📌 Mô tả bài toán
+Cho một tập `n` công việc. Mỗi công việc gồm:
+- `deadline`: hạn chót để hoàn thành (tính theo slot thời gian).
+- `profit`: lợi nhuận nếu hoàn thành công việc trước hạn.
+
+**Mục tiêu**:  
+- Chọn ra tập công việc và thứ tự thực hiện sao cho **tổng lợi nhuận lớn nhất**.
+- Không có công việc nào trễ hạn.
+
+---
+
+## 📌 Ý tưởng giải thuật Branch and Bound
+- Xây dựng cây tìm kiếm, mỗi **node** biểu diễn trạng thái của một tập công việc:
+  - **Chọn công việc** (nếu còn thời gian trống).
+  - **Bỏ qua công việc**.
+- Tính **cận trên (bound)** cho mỗi node để dự đoán lợi nhuận tối đa có thể đạt được từ node đó.
+- Sử dụng **Priority Queue (max-heap)** để duyệt các node có bound cao nhất trước.
+- Cắt bỏ (prune) các nhánh không thể mang lại kết quả tốt hơn nghiệm hiện tại.
+
+---
+
+## 📌 Code Python
+
+```python
+import heapq
+
+class Node:
+    def __init__(self, level, profit, bound, schedule):
+        self.level = level      # cấp của node trong cây (công việc thứ mấy)
+        self.profit = profit    # lợi nhuận hiện tại
+        self.bound = bound      # cận trên của node này
+        self.schedule = schedule  # danh sách công việc đã chọn
+
+    # định nghĩa so sánh để dùng trong max-heap
+    def __lt__(self, other):
+        return self.bound > other.bound
+
+
+def bound(node, jobs, max_deadline):
+    """Tính cận trên (bound) của một node"""
+    if node.level >= len(jobs):
+        return 0
+
+    profit_bound = node.profit
+    j = node.level + 1
+    total_time = len(node.schedule)
+
+    # duyệt tiếp các job còn lại
+    while j < len(jobs) and total_time < max_deadline:
+        profit_bound += jobs[j][1]  # cộng thêm profit
+        total_time += 1
+        j += 1
+    return profit_bound
+
+
 def job_scheduling_branch_and_bound(jobs):
-    n = len(jobs)
-    best_profit = 0
+    """
+    jobs: danh sách tuple (deadline, profit)
+    Trả về: (max_profit, best_schedule)
+    """
+    # sắp xếp công việc theo profit giảm dần
+    jobs = sorted(jobs, key=lambda x: x[1], reverse=True)
+    max_deadline = max(job[0] for job in jobs)
+
+    # khởi tạo hàng đợi ưu tiên
+    pq = []
+    root = Node(level=-1, profit=0, bound=0, schedule=[])
+    root.bound = bound(root, jobs, max_deadline)
+    heapq.heappush(pq, root)
+
+    max_profit = 0
     best_schedule = []
 
-    # Sắp xếp theo profit giảm dần để cận tốt hơn
-    jobs = sorted([(d, p, i) for i, (d, p) in enumerate(jobs)], key=lambda x: x[1], reverse=True)
+    while pq:
+        node = heapq.heappop(pq)
 
-    def bound(i, current_profit, chosen):
-        """Cận trên (ước lượng tối đa có thể đạt được từ nhánh này)"""
-        total_profit = current_profit
-        remaining = n - i
-        # cộng thêm lợi nhuận lớn nhất của các job còn lại (tham lam)
-        for j in range(i, n):
-            total_profit += jobs[j][1]
-        return total_profit
+        if node.bound > max_profit and node.level < len(jobs) - 1:
+            next_level = node.level + 1
+            job = jobs[next_level]
 
-    def backtrack(i, current_profit, chosen):
-        nonlocal best_profit, best_schedule
+            # Nhánh 1: chọn job này (nếu còn slot)
+            if len(node.schedule) < job[0]:
+                new_schedule = node.schedule + [job]
+                profit_with_job = node.profit + job[1]
+                child = Node(
+                    level=next_level,
+                    profit=profit_with_job,
+                    bound=bound(Node(next_level, profit_with_job, 0, new_schedule), jobs, max_deadline),
+                    schedule=new_schedule
+                )
+                if profit_with_job > max_profit:
+                    max_profit = profit_with_job
+                    best_schedule = new_schedule
+                if child.bound > max_profit:
+                    heapq.heappush(pq, child)
 
-        if i == n:
-            if current_profit > best_profit:
-                best_profit = current_profit
-                best_schedule = chosen.copy()
-            return
+            # Nhánh 2: bỏ qua job này
+            child = Node(
+                level=next_level,
+                profit=node.profit,
+                bound=bound(Node(next_level, node.profit, 0, node.schedule), jobs, max_deadline),
+                schedule=node.schedule
+            )
+            if child.bound > max_profit:
+                heapq.heappush(pq, child)
 
-        # Cắt nhánh nếu cận trên ≤ best_profit hiện tại
-        if bound(i, current_profit, chosen) <= best_profit:
-            return
+    return max_profit, best_schedule
 
-        d, p, idx = jobs[i]
 
-        # 1. Thử chọn job i
-        if len(chosen) < d:
-            chosen.append(idx)
-            backtrack(i+1, current_profit + p, chosen)
-            chosen.pop()
+if __name__ == "__main__":
+    # ví dụ
+    jobs = [(2, 100), (1, 19), (2, 27), (1, 25), (3, 15)]
+    max_profit, schedule = job_scheduling_branch_and_bound(jobs)
 
-        # 2. Bỏ job i
-        backtrack(i+1, current_profit, chosen)
-
-    backtrack(0, 0, [])
-    return best_profit, best_schedule
-Phương pháp
-Brute Force Backtracking
-Độ phức tạp: O(2^n)
+    print("Lợi nhuận tối đa:", max_profit)
+    print("Lịch công việc tối ưu:", schedule)
+Phương pháp	
+Brute Force Backtracking	
+Độ phức tạp: O(2^n)	
 Đặc điểm: Duyệt hết, dễ cài đặt nhưng chậm khi n lớn
 Phương pháp
 Branch & Bound
