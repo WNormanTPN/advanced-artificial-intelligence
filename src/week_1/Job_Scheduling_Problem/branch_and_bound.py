@@ -1,11 +1,11 @@
-
 import heapq
+
 
 class Node:
     def __init__(self, level, profit, bound, schedule):
-        self.level = level      # cấp của node trong cây (công việc thứ mấy)
-        self.profit = profit    # lợi nhuận hiện tại
-        self.bound = bound      # cận trên của node này
+        self.level = level  # cấp của node trong cây (công việc thứ mấy)
+        self.profit = profit  # lợi nhuận hiện tại
+        self.bound = bound  # cận trên của node này
         self.schedule = schedule  # danh sách công việc đã chọn
 
     # định nghĩa so sánh để dùng trong max-heap
@@ -31,8 +31,7 @@ def bound(node, jobs, max_deadline):
 
 
 def job_scheduling_branch_and_bound(jobs):
-    """
-    jobs: danh sách tuple (deadline, profit)
+    """jobs: danh sách tuple (deadline, profit)
     Trả về: (max_profit, best_schedule)
     """
     # sắp xếp công việc theo profit giảm dần
@@ -63,7 +62,7 @@ def job_scheduling_branch_and_bound(jobs):
                     level=next_level,
                     profit=profit_with_job,
                     bound=bound(Node(next_level, profit_with_job, 0, new_schedule), jobs, max_deadline),
-                    schedule=new_schedule
+                    schedule=new_schedule,
                 )
                 if profit_with_job > max_profit:
                     max_profit = profit_with_job
@@ -76,7 +75,7 @@ def job_scheduling_branch_and_bound(jobs):
                 level=next_level,
                 profit=node.profit,
                 bound=bound(Node(next_level, node.profit, 0, node.schedule), jobs, max_deadline),
-                schedule=node.schedule
+                schedule=node.schedule,
             )
             if child.bound > max_profit:
                 heapq.heappush(pq, child)
@@ -89,5 +88,5 @@ if __name__ == "__main__":
     jobs = [(2, 100), (1, 19), (2, 27), (1, 25), (3, 15)]
     max_profit, schedule = job_scheduling_branch_and_bound(jobs)
 
-    print( max_profit)
-    print( schedule)
+    print(max_profit)
+    print(schedule)
